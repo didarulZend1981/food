@@ -1,11 +1,11 @@
-####CMD
+####  CMD
       npm create vite@latest name-of-your-project -- --template react
       cd my-project
       npm install -D tailwindcss postcss autoprefixer
       npx tailwindcss init -p
 
 
-####### tailwind.config.js
+#### tailwind.config.js
         /** @type {import('tailwindcss').Config} */
           export default {
             content: [
@@ -18,7 +18,7 @@
             plugins: [],
           }
 
-#######  index.css
+####  index.css
           @tailwind base;
           @tailwind components;
           @tailwind utilities;
