@@ -231,5 +231,11 @@
       };
 
       export default Banner;
+    
+
+
+######  Navber Changing  using menu trensparent
+
+        <div className="navbar max-w-screen-xl mx-auto fixed z-10 bg-opacity-30 bg-black text-white">
 
  
