@@ -8,6 +8,9 @@
 
       //
       npm install react-icons --save
+      npm install react-responsive-carousel --save
+##### https://github.com/brillout/awesome-react-components
+
 
 #### tailwind.config.js
         /** @type {import('tailwindcss').Config} */
@@ -199,4 +202,34 @@
         };
 
       export default Home;
+
+
+#######   Banner 
+#### CMD 
+      npm install react-responsive-carousel --save
+#### 5-pages/Banner/Banner.jsx
+
+      import "react-responsive-carousel/lib/styles/carousel.min.css"; 
+      import { Carousel } from 'react-responsive-carousel';
+      import img1 from '../../../../assets/home/01.jpg'
+      import img2 from '../../../../assets/home/02.jpg'
+
+      const Banner = () => {
+      return (
+          <Carousel>
+              <div>
+                  <img src={img1} />
+                  <p className="legend">Legend 1</p>
+              </div>
+              <div>
+                  <img src={img2} />
+                  <p className="legend">Legend 2</p>
+              </div>
+
+          </Carousel>
+          );
+      };
+
+      export default Banner;
+
  
