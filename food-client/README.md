@@ -3,6 +3,7 @@
       cd my-project
       npm install -D tailwindcss postcss autoprefixer
       npx tailwindcss init -p
+      npm i -D daisyui@latest
 
 
 #### tailwind.config.js
@@ -15,7 +16,9 @@
             theme: {
               extend: {},
             },
-            plugins: [],
+            plugins: [
+              require('daisyui'),
+            ],
           }
 
 ####  index.css
