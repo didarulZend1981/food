@@ -238,4 +238,91 @@
 
         <div className="navbar max-w-screen-xl mx-auto fixed z-10 bg-opacity-30 bg-black text-white">
 
+#######   SECTION TITLE
+#### 1.components/SectionTitle/SectionTitle.jsx
+      const SectionTitle = ({heading, subHeading}) => {
+        return (
+            <div className="mx-auto text-center md:w-4/12 my-8">
+                <p className="text-yellow-600 mb-2">--- {subHeading} ---</p>
+                <h3 className="text-3xl uppercase border-y-4 py-4">{heading}</h3>
+            </div>
+        );
+      };
+
+      export default SectionTitle;
+#### 2.Category/Category.jsx
+      <SectionTitle 
+            subHeading={"From 11.00am to 10.00pm"}
+            heading={"Order Online"}>
+            
+      </SectionTitle>
+######## Pages/Home/Home.jsx    -------PopularMenu
+ 
+        import PopularMenu from "./PopularMenu/PopularMenu";
+          const Home = () => {
+            return (
+              <div>
+                  <PopularMenu></PopularMenu>
+              </div>
+            );
+          };
+        export default Home;
+######## 1. Pages/Home/PopularMenu/PopularMenu.jsx
+            import { useEffect, useState } from "react";
+            import SectionTitle from "../../../../components/SectionTitle/SectionTitle";
+            import MenuItem from "../../../Shared/MenuItem/MenuItem";
+
+
+            const PopularMenu = () => {
+                const [menu,setMenu]=useState([]);
+                  useEffect(()=>{
+                    fetch('menu.json')
+                    .then(res=>res.json())
+                    .then(data=>{
+                      const PopularItems =data.filter(item=>item.category==='popular');
+                      setMenu(PopularItems);
+                    })
+                  },[])
+                
+                return (
+                  <section className="mb-12">
+                        <SectionTitle
+                              heading="From Our Menu"
+                              subHeading="Popular Items"
+                          >
+                            
+                          </SectionTitle>
+                          <div className="grid md:grid-cols-2 gap-10">
+                              {
+                                  menu.map(item => <MenuItem
+                                      key={item._id}
+                                      item={item}
+                                  ></MenuItem>)
+                              }
+                          </div>
+                  </section>
+                );
+              };
+
+              export default PopularMenu;
+
+######## 2. ../../../Shared/MenuItem/MenuItem.jsx
+            const MenuItem = ({item}) => {
+                const {name, image, price, recipe} = item;
+                return (
+                    <div className="flex space-x-2">
+                        <img style={{borderRadius: '0 200px 200px 200px'}} className="w-[100px]" src={image} alt="" />
+                        <div>
+                            <h3 className="uppercase">{name}----------</h3>
+                            <p>{recipe}</p>
+                        </div>
+                        <p className="text-yellow-500">${price}</p>
+                    </div>
+                );
+              };
+
+              export default MenuItem;
+
+####---------------------------ENDING -PopularMenu--------------
+
  
