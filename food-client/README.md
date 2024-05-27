@@ -256,18 +256,22 @@
             heading={"Order Online"}>
             
       </SectionTitle>
+
+#########   PopularMenu TITLE
 ######## Pages/Home/Home.jsx    -------PopularMenu
  
-        import PopularMenu from "./PopularMenu/PopularMenu";
-          const Home = () => {
-            return (
-              <div>
-                  <PopularMenu></PopularMenu>
-              </div>
-            );
-          };
-        export default Home;
-######## 1. Pages/Home/PopularMenu/PopularMenu.jsx
+          import PopularMenu from "./PopularMenu/PopularMenu";
+            const Home = () => {
+              return (
+                <div>
+                    <PopularMenu></PopularMenu>
+                </div>
+              );
+            };
+          export default Home;
+######## 1.Pages/Home/PopularMenu/PopularMenu.jsx
+
+
             import { useEffect, useState } from "react";
             import SectionTitle from "../../../../components/SectionTitle/SectionTitle";
             import MenuItem from "../../../Shared/MenuItem/MenuItem";
@@ -306,23 +310,23 @@
 
               export default PopularMenu;
 
-######## 2. ../../../Shared/MenuItem/MenuItem.jsx
+######## 2.Shared/MenuItem/MenuItem.jsx
             const MenuItem = ({item}) => {
-                const {name, image, price, recipe} = item;
-                return (
-                    <div className="flex space-x-2">
-                        <img style={{borderRadius: '0 200px 200px 200px'}} className="w-[100px]" src={image} alt="" />
-                        <div>
-                            <h3 className="uppercase">{name}----------</h3>
-                            <p>{recipe}</p>
-                        </div>
-                        <p className="text-yellow-500">${price}</p>
-                    </div>
-                );
-              };
+                  const {name, image, price, recipe} = item;
+                  return (
+                      <div className="flex space-x-2">
+                          <img style={{borderRadius: '0 200px 200px 200px'}} className="w-[100px]" src={image} alt="" />
+                          <div>
+                              <h3 className="uppercase">{name}----------</h3>
+                              <p>{recipe}</p>
+                          </div>
+                          <p className="text-yellow-500">${price}</p>
+                      </div>
+                  );
+                };
 
-              export default MenuItem;
+            export default MenuItem;
 
-####---------------------------ENDING -PopularMenu--------------
+
 
  
