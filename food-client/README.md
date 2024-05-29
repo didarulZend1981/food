@@ -761,6 +761,126 @@
 
       export default Menu;
 
+###### Order Tab-----3 ways
+##### CMD
+      npm install --save react-tabs
 
+
+##### ../../../components/FoodCard/FoodCard.jsx
+
+      
+       const FoodCard = ({item}) => {
+          const {name, image, price, recipe} = item;
+          return (
+              <div className="card w-96 bg-base-100 shadow-xl">
+                  <figure><img src={image} alt="Shoes" /></figure>
+                  <p className="absolute right-0 mr-4 mt-4 px-4 bg-slate-900 text-white">${price}</p>
+                  <div className="card-body flex flex-col items-center">
+                      <h2 className="card-title">{name}</h2>
+                      <p>{recipe}</p>
+                      <div className="card-actions justify-end">
+                          <button className="btn btn-outline bg-slate-100 border-0 border-b-4 border-orange-400 mt-4">Add to Cart</button>
+                      </div>
+                  </div>
+              </div>
+          );
+          
+      };
+
+      export default FoodCard;
+
+
+##### ../OrderTab/OrderTab.jsx
+
+
+        import FoodCard from '../../../components/FoodCard/FoodCard';
+
+
+        const OrderTab = ({ items }) => {
+            
+            return (
+                <div >
+
+                            <div className='grid md:grid-cols-3 gap-10'>
+                                {
+                                    items.map(item => <FoodCard
+                                        key={item._id}
+                                        item={item}
+                                    ></FoodCard>)
+                                }
+                            </div>
+
+                    
+
+                  
+                </div>
+            );
+        };
+
+        export default OrderTab;
+
+
+##### pages/Order/Order/Order.jsx
+
+
+      import { useState } from 'react';
+      import orderCoverImg from '../../../assets/shop/banner2.jpg'
+      import Cover from '../../Shared/Cover/Cover';
+      import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+      import 'react-tabs/style/react-tabs.css';
+
+
+
+      import { Helmet } from 'react-helmet-async';
+      import useMenu from '../../../hooks/useMenu';
+
+      import OrderTab from '../OrderTab/OrderTab';
+
+      const Order = () => {
+        const [menu] = useMenu();
+        const [tabIndex, setTabIndex] = useState(0);
+        const desserts = menu.filter(item => item.category === 'dessert');
+        const soup = menu.filter(item => item.category === 'soup');
+        const salad = menu.filter(item => item.category === 'salad');
+        const pizza = menu.filter(item => item.category === 'pizza');
+        const drinks = menu.filter(item => item.category === 'drinks');
+        return (
+          <div>
+                <Helmet>
+                      <title>Bistro Boss | Order Food</title>
+                  </Helmet>
+                  <Cover img={orderCoverImg} title="Order Food"></Cover>
+                  <Tabs defaultIndex={tabIndex} onSelect={(index) => setTabIndex(index)}>
+                        <TabList>
+                          <Tab>desserts</Tab>
+                          <Tab>soup</Tab>
+                          <Tab>salad</Tab>
+                          <Tab>pizza</Tab>
+                          <Tab>drinks</Tab>
+                        
+                        </TabList>
+
+                        <TabPanel>
+                              <OrderTab items={salad}></OrderTab>
+                        </TabPanel>
+                        <TabPanel>
+                              <OrderTab items={desserts}></OrderTab>
+                        </TabPanel>
+                        <TabPanel>
+                              <OrderTab items={salad}></OrderTab>
+                        </TabPanel>
+                        <TabPanel>
+                              <OrderTab items={pizza}></OrderTab>
+                        </TabPanel>
+                        <TabPanel>
+                              <OrderTab items={drinks}></OrderTab>
+                        </TabPanel>
+                      </Tabs>
+                  
+          </div>
+        );
+      };
+
+      export default Order;
 
  
