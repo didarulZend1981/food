@@ -500,6 +500,9 @@
           )
 
 ##### Requre page(such as home and menu)
+#### CMD
+
+      npm i react-helmet-async
 
 ##### home.jsx--
 
