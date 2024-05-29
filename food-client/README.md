@@ -482,7 +482,10 @@
         </body>
       </html>
 
+#### CMD
 
+      npm i react-helmet-async
+      
 ####    main.jsx
 
         import { HelmetProvider } from 'react-helmet-async';
@@ -500,9 +503,7 @@
           )
 
 ##### Requre page(such as home and menu)
-#### CMD
 
-      npm i react-helmet-async
 
 ##### home.jsx--
 
