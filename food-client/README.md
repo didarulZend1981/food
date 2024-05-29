@@ -386,4 +386,157 @@
       .featured-item{
           background-image: url('../../../../assets/home/featured.jpg');
       }
+
+
+
+###### TESTMONIAL
+##### CMD
+       $ npm install swiper   (Previous install no need instal)
+       npm i @smastrom/react-rating  (Previous install no need instal)
+#####  ./Testimonial/Testimonial.jsx;
+
+          import { useEffect, useState } from "react";
+          import SectionTitle from "../../../../components/SectionTitle/SectionTitle";
+
+          import { Swiper, SwiperSlide } from 'swiper/react';
+          import { Rating } from "@smastrom/react-rating";
+          import '@smastrom/react-rating/style.css'
+          // Import Swiper styles
+          import 'swiper/css';
+          import 'swiper/css/navigation';
+
+          // import required modules
+          import { Navigation } from 'swiper/modules';
+
+
+
+
+
+          const Testimonial = () => {
+          const [reviews, setReviews] = useState([]);
+
+          useEffect(() => {
+          fetch('reviews.json')
+            .then(res => res.json())
+            .then(data => setReviews(data))
+          }, [])
+
+          console.log("revieCount",reviews.length)
+          return (
+          <section className="my-20">
+
+          <SectionTitle subHeading="What our Client Say" heading="Testimonial" >
+
+            </SectionTitle>
+
+
+            <Swiper navigation={true} modules={[Navigation]} className="mySwiper">
+
+          {
+                    reviews.map(review => <SwiperSlide
+                        key={review._id}
+                    >
+                        <div className="flex flex-col items-center mx-24 my-16">
+                            
+                            <Rating
+                                style={{ maxWidth: 180 }}
+                                value={review.rating}
+                                readOnly
+                            />
+                            <p className="py-8">{review.details}</p>
+                            <h3 className="text-2xl text-orange-400">{review.name}</h3>
+                        </div>
+                    </SwiperSlide>)
+                }
+
+          </Swiper>
+
+
+
+            
+
+            
+          </section>
+          );
+          };
+
+          export default Testimonial;
+
+
+###### Dynamic Page Title By Route Using React Helmet
+#### Site Logo change
+
+
+####    index.html
+       <!doctype html>
+      <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <link rel="icon" type="image/svg+xml" href="/logo.png" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <title>Bistro Boss RESTURENT</title>
+        </head>
+        <body>
+          <div id="root"></div>
+          <script type="module" src="/src/main.jsx"></script>
+        </body>
+      </html>
+
+
+####    main.jsx
+
+        import { HelmetProvider } from 'react-helmet-async';
+
+          ReactDOM.createRoot(document.getElementById('root')).render(
+              <React.StrictMode>
+                <HelmetProvider>
+                    <div className='max-w-screen-xl mx-auto'>
+                    <RouterProvider router={router} />
+                    </div>
+                </HelmetProvider>
+                
+              
+              </React.StrictMode>,
+          )
+
+##### Requre page(such as home and menu)
+
+##### home.jsx--
+
+      import { Helmet } from "react-helmet-async";
+      
+
+
+      const Home = () => {
+        return (
+          <div>
+            <Helmet>
+              <title>Bistor Boss | Home</title>
+              
+            </Helmet>
+             
+          </div>
+        );
+      };
+
+      export default Home;
+
+#####  menu.jsx
+
+        import { Helmet } from "react-helmet-async";
+
+
+        const TestMenu = () => {
+          return (
+            <div>
+              <Helmet>
+                <title>Hello World</title>
+                
+              </Helmet>
+            </div>
+          );
+        };
+
+        export default TestMenu;
+
  
