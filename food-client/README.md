@@ -598,5 +598,169 @@
 
       export default Menu;
 
+###### Custom Hook Using useManu
+##### hooks/useMenu.jsx
+
+
+      import { useEffect, useState } from "react";
+
+      const useMenu = () => {
+      const [menu, setMenu] = useState([]);
+      const [loading, setLoading] = useState(true);
+      useEffect(() => {
+            fetch('menu.json')
+            .then(res => res.json())
+            .then(data => {
+                setMenu(data);
+                setLoading(false);
+            });
+      }, [])
+      return [menu, loading]
+      }
+
+      export default useMenu;
+
+#### /PopularMenu/PopularMenu.jsx  (useMenu.jsx)
+
+      import { useEffect, useState } from "react";
+      import SectionTitle from "../../../../components/SectionTitle/SectionTitle";
+      import MenuItem from "../../../Shared/MenuItem/MenuItem";
+      import useMenu from "../../../../hooks/useMenu";
+
+
+      const PopularMenu = () => {
+        const [menu]=useMenu();
+        const popular =menu.filter(item=>item.category==='popular');
+        
+        return (
+          <section className="mb-12">
+                <SectionTitle
+                      heading="From Our Menu"
+                      subHeading="Popular Items"
+                  >
+                    
+                  </SectionTitle>
+                  <div className="grid md:grid-cols-2 gap-10">
+                      {
+                          popular.map(item => <MenuItem
+                              key={item._id}
+                              item={item}
+                          ></MenuItem>)
+                      }
+                  </div>
+          </section>
+        );
+      };
+
+      export default PopularMenu;
+
+
+
+##### Full MENU PAGE -3 step
+#### Cover.jsx
+
+    import { Parallax } from 'react-parallax';
+
+    const Cover = ({ img, title, description }) => {
+        return (
+            <Parallax
+                blur={{ min: -50, max: 50 }}
+                bgImage={img}
+                bgImageAlt="the menu"
+                strength={-200}
+            >
+                <div className="hero h-[500px]">
+                    <div className="hero-overlay bg-opacity-60"></div>
+                    <div className="hero-content text-center text-neutral-content">
+                        <div className="max-w-md">
+                            <h1 className="mb-5 text-5xl font-bold uppercase">{title}</h1>
+                            <p className="mb-5">{description}</p>
+
+                        </div>
+                    </div>
+                </div>
+            </Parallax>
+
+        );
+    };
+
+    export default Cover;
+
+
+#### MenuCategory/MenuCategory.jsx
+
+
+        import { Link } from 'react-router-dom';
+
+
+        import Cover from '../../Shared/Cover/Cover';
+        import MenuItem from '../../Shared/MenuItem/MenuItem';
+
+        const MenuCategory = ({items, title,description, img}) => {
+            return (
+                <div className='pt-8'>
+                    { title && <Cover img={img} title={title} description={description}></Cover>}
+                    <div className="grid md:grid-cols-2 gap-10 my-16">
+                        {
+                            items.map(item => <MenuItem
+                                key={item._id}
+                                item={item}
+                            ></MenuItem>)
+                        }
+                    </div>
+                    <Link to={`/order/${title}`}>
+                    <button className="btn btn-outline border-0 border-b-4 mt-4">Order Now</button>
+                    </Link>
+                </div>
+            );
+        };
+
+        export default MenuCategory;
+
+
+#### Page/Menu/menu.jsx
+      import { Helmet } from 'react-helmet-async';
+      import useMenu from '../../hooks/useMenu';
+      import Cover from '../Shared/Cover/Cover';
+      import SectionTitle from '../../components/SectionTitle/SectionTitle';
+     
+      import menuImg from '../../assets/menu/banner3.jpg'
+      import dessertImg from '../../assets/menu/dessert-bg.jpeg'
+      import pizzaImg from '../../assets/menu/dessert-bg.jpeg'
+      import saladImg from '../../assets/menu/dessert-bg.jpeg'
+      import soupImg from '../../assets/menu/dessert-bg.jpeg'
+      import MenuCategory from './MenuCategory/MenuCategory';
+
+
+
+      const Menu = () => {
+      const [menu] = useMenu();
+      const desserts = menu.filter(item => item.category === 'dessert');
+      const soup = menu.filter(item => item.category === 'soup');
+      const salad = menu.filter(item => item.category === 'salad');
+      const pizza = menu.filter(item => item.category === 'pizza');
+      const offered = menu.filter(item => item.category === 'offered');
+      return (
+          <div>
+              <Helmet>
+                  <title>Bistro Boss | Menu</title>
+              </Helmet>
+              <Cover img={menuImg} title="our menu"></Cover>
+              {/* main cover */}
+              <SectionTitle subHeading="Don't Miss" heading="Today's Offer"></SectionTitle>
+              {/* offered menu items */}
+              {/* offered menu items */}
+              <MenuCategory items={offered}></MenuCategory>
+              <MenuCategory items={desserts} title="dessert" img={dessertImg}></MenuCategory>
+              <MenuCategory items={pizza} title={"pizza"} description="Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda excepturi exercitationem quasi. In deleniti eaque aut repudiandae et a id nisi." img={pizzaImg}></MenuCategory>
+              <MenuCategory items={salad} title={"salad"} img={saladImg}></MenuCategory>
+              <MenuCategory items={soup} title={"soup"} img={soupImg}></MenuCategory>
+          </div>
+      );
+      };
+
+      export default Menu;
+
+
 
  
