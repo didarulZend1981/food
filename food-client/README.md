@@ -883,4 +883,99 @@
 
       export default Order;
 
+##### SERVER SETUP
+
+      index.js
+          // get all menuFood data from db
+        app.get('/menuFood', async (req, res) => {
+          const result = await menuFoodCollection.find().toArray()
+          res.send(result)
+        })
+
+        // get all reviewsFood data from db
+        app.get('/reviewsFood', async (req, res) => {
+          const result = await reviewsFoodCollection.find().toArray()
+          res.send(result)
+        })
+
+
+        
+##### select tab
+
+
+##### pages/Order/Order/Order.jsx
+      import { useState } from 'react';
+      import orderCoverImg from '../../../assets/shop/banner2.jpg'
+      import Cover from '../../Shared/Cover/Cover';
+      import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+      import 'react-tabs/style/react-tabs.css';
+
+
+
+      import { Helmet } from 'react-helmet-async';
+      import useMenu from '../../../hooks/useMenu';
+
+      import OrderTab from '../OrderTab/OrderTab';
+      import { useParams } from 'react-router-dom';
+
+      const Order = () => {
+        //---select tab
+        const categories = ['salad', 'pizza', 'soup', 'dessert', 'drinks'];
+        const { category } = useParams();
+        const initialIndex = categories.indexOf(category);
+        const [tabIndex, setTabIndex] = useState(initialIndex);
+        //---select tab
+        const [menu] = useMenu();
+      
+        const salad = menu.filter(item => item.category === 'salad');
+        const pizza = menu.filter(item => item.category === 'pizza');
+        const soup = menu.filter(item => item.category === 'soup');
+        const desserts = menu.filter(item => item.category === 'dessert');
+        const drinks = menu.filter(item => item.category === 'drinks');
+        return (
+          <div>
+                <Helmet>
+                      <title>Bistro Boss | Order Food</title>
+                  </Helmet>
+                  <Cover img={orderCoverImg} title="Order Food"></Cover>
+                  <Tabs defaultIndex={tabIndex} onSelect={(index) => setTabIndex(index)}>
+                        <TabList>
+                          <Tab>salad</Tab>
+                          <Tab>pizza</Tab>
+                          <Tab>soup</Tab>
+                          <Tab>desserts</Tab>
+                          <Tab>drinks</Tab>
+                        
+                        </TabList>
+
+                        <TabPanel>
+                              <OrderTab items={salad}></OrderTab>
+                        </TabPanel>
+                        <TabPanel>
+                              <OrderTab items={pizza}></OrderTab>
+                        </TabPanel>
+                        <TabPanel>
+                              <OrderTab items={soup}></OrderTab>
+                        </TabPanel>
+                        <TabPanel>
+                              <OrderTab items={desserts}></OrderTab>
+                        </TabPanel>
+                        <TabPanel>
+                              <OrderTab items={drinks}></OrderTab>
+                        </TabPanel>
+                      </Tabs>
+                  
+          </div>
+        );
+      };
+
+      export default Order;
+
+
+
+
+
+
+
+
  
