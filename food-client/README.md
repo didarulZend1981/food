@@ -973,7 +973,487 @@
 
 
 
+###### Authintication 
+###### CMD
+       npm i firebase
 
+
+###### env.local
+
+      VITE_apiKey=AIzaSyCTJEwvJ4ajtd3mF0qNjl3wBLMK28_WSpI
+      VITE_authDomain=art-auth-1a330.firebaseapp.com
+      VITE_projectId=art-auth-1a330
+      VITE_storageBucket=art-auth-1a330.appspot.com
+      VITE_messagingSenderId=144394236845
+      VITE_appId=1:144394236845:web:4b9dc8fd9cd8751d55a724
+      VITE_API_URL=http://localhost:8000
+      VITE_IMGBB_API_KEY=46fc905dcd878d6df9be3d475735c2a9
+
+
+###### firebase/firebase.config.js 
+
+        import { initializeApp } from 'firebase/app'
+
+        const firebaseConfig = {
+            apiKey: import.meta.env.VITE_apiKey,
+            authDomain: import.meta.env.VITE_authDomain,
+            projectId: import.meta.env.VITE_projectId,
+            storageBucket: import.meta.env.VITE_storageBucket,
+            messagingSenderId: import.meta.env.VITE_messagingSenderId,
+            appId: import.meta.env.VITE_appId,
+        }
+
+        export const app = initializeApp(firebaseConfig)
+
+
+
+
+###### providers/AuthProvider.jsx
+
+
+        import { createContext, useEffect, useState } from "react";
+        import { createUserWithEmailAndPassword, getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
+        import { app } from "../firebase/firebase.config";
+
+        export const AuthContext = createContext(null);
+
+        const auth = getAuth(app);
+
+        const AuthProvider = ({ children }) => {
+          const [user, setUser] = useState(null);
+          const [loading, setLoading] = useState(true);
+
+          const createUser = (email, password) => {
+              setLoading(true);
+              return createUserWithEmailAndPassword(auth, email, password)
+          }
+
+          const signIn = (email, password) => {
+              setLoading(true);
+              return signInWithEmailAndPassword(auth, email, password);
+          }
+
+          const logOut = () => {
+              setLoading(true);
+              return signOut(auth);
+          }
+
+          const updateUserProfile = (name, photo) => {
+              return updateProfile(auth.currentUser, {
+                  displayName: name, photoURL: photo
+              });
+          }
+
+          useEffect(() => {
+              const unsubscribe = onAuthStateChanged(auth, currentUser => {
+                  setUser(currentUser);
+                  console.log('current user', currentUser);
+                  setLoading(false);
+              });
+              return () => {
+                  return unsubscribe();
+              }
+          }, [])
+
+          const authInfo = {
+              user,
+              loading,
+              createUser,
+              signIn,
+              logOut,
+              updateUserProfile
+          }
+
+          return (
+              <AuthContext.Provider value={authInfo}>
+                  {children}
+              </AuthContext.Provider>
+          );
+        };
+
+        export default AuthProvider;
+
+
+##### main.jsx
+
+
+      import React from 'react'
+      import ReactDOM from 'react-dom/client'
+
+      import './index.css'
+      import { RouterProvider } from 'react-router-dom'
+      import router from './routes/Routes'
+      import { HelmetProvider } from 'react-helmet-async';
+      import AuthProvider from './providers/AuthProvider'
+
+      ReactDOM.createRoot(document.getElementById('root')).render(
+          <React.StrictMode>
+            <AuthProvider>
+                  <HelmetProvider>
+                      <div className='max-w-screen-xl mx-auto'>
+                      <RouterProvider router={router} />
+                      </div>
+                  </HelmetProvider>
+            </AuthProvider>
+            
+            
+          
+          </React.StrictMode>,
+      )
+
+###### CMD
+       
+       npm i sweetalert2
+       npm install react-hook-form
+#### SignUp/SignUp.jsx
+
+      import { useContext } from "react";
+      import { Helmet } from "react-helmet-async";
+      import { useForm } from "react-hook-form";
+      import { Link, useNavigate } from "react-router-dom";
+      import Swal from 'sweetalert2'
+      import { AuthContext } from "../../providers/AuthProvider";
+
+      const SignUp = () => {
+
+          const { register, handleSubmit, reset, formState: { errors } } = useForm();
+          const { createUser, updateUserProfile } = useContext(AuthContext);
+          const navigate = useNavigate();
+
+          const onSubmit = data => {
+              console.log(data);
+              createUser(data.email, data.password)
+                  .then(result => {
+                      const loggedUser = result.user;
+                      console.log(loggedUser);
+                      updateUserProfile(data.name, data.photoURL)
+                          .then(() => {
+                              console.log('user profile info updated')
+                              reset();
+                              Swal.fire({
+                                  position: 'top-end',
+                                  icon: 'success',
+                                  title: 'User created successfully.',
+                                  showConfirmButton: false,
+                                  timer: 1500
+                              });
+                              navigate('/');
+
+                          })
+                          .catch(error => console.log(error))
+                  })
+          };
+
+          return (
+              <>
+                  <Helmet>
+                      <title>Bistro Boss | Sign Up</title>
+                  </Helmet>
+                  <div className="hero min-h-screen bg-base-200">
+                      <div className="hero-content flex-col lg:flex-row-reverse">
+                          <div className="text-center lg:text-left">
+                              <h1 className="text-5xl font-bold">Sign up now!</h1>
+                              <p className="py-6">Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda excepturi exercitationem quasi. In deleniti eaque aut repudiandae et a id nisi.</p>
+                          </div>
+                          <div className="card flex-shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
+                              <form onSubmit={handleSubmit(onSubmit)} className="card-body">
+                                  <div className="form-control">
+                                      <label className="label">
+                                          <span className="label-text">Name</span>
+                                      </label>
+                                      <input type="text"  {...register("name", { required: true })} name="name" placeholder="Name" className="input input-bordered" />
+                                      {errors.name && <span className="text-red-600">Name is required</span>}
+                                  </div>
+                                  <div className="form-control">
+                                      <label className="label">
+                                          <span className="label-text">Photo URL</span>
+                                      </label>
+                                      <input type="text"  {...register("photoURL", { required: true })} placeholder="Photo URL" className="input input-bordered" />
+                                      {errors.photoURL && <span className="text-red-600">Photo URL is required</span>}
+                                  </div>
+                                  <div className="form-control">
+                                      <label className="label">
+                                          <span className="label-text">Email</span>
+                                      </label>
+                                      <input type="email"  {...register("email", { required: true })} name="email" placeholder="email" className="input input-bordered" />
+                                      {errors.email && <span className="text-red-600">Email is required</span>}
+                                  </div>
+                                  <div className="form-control">
+                                      <label className="label">
+                                          <span className="label-text">Password</span>
+                                      </label>
+                                      <input type="password"  {...register("password", {
+                                          required: true,
+                                          minLength: 6,
+                                          maxLength: 20,
+                                          pattern: /(?=.*[A-Z])(?=.*[!@#$&*])(?=.*[0-9])(?=.*[a-z])/
+                                      })} placeholder="password" className="input input-bordered" />
+                                      {errors.password?.type === 'required' && <p className="text-red-600">Password is required</p>}
+                                      {errors.password?.type === 'minLength' && <p className="text-red-600">Password must be 6 characters</p>}
+                                      {errors.password?.type === 'maxLength' && <p className="text-red-600">Password must be less than 20 characters</p>}
+                                      {errors.password?.type === 'pattern' && <p className="text-red-600">Password must have one Uppercase one lower case, one number and one special character.</p>}
+                                      <label className="label">
+                                          <a href="#" className="label-text-alt link link-hover">Forgot password?</a>
+                                      </label>
+                                  </div>
+                                  <div className="form-control mt-6">
+                                      <input className="btn btn-primary" type="submit" value="Sign Up" />
+                                  </div>
+                              </form>
+                              <p><small>Already have an account <Link to="/login">Login</Link></small></p>
+                          </div>
+                      </div>
+                  </div>
+              </>
+          );
+      };
+
+      export default SignUp;
+
+#### routes/Routes.jsx
+
+      import { createBrowserRouter } from "react-router-dom";
+
+      import SignUp from "../pages/SignUp/SignUp";
+        const router = createBrowserRouter([
+          {
+            path: "/",
+            children:[
+                
+                {
+                  path:'signup',
+                  element:<SignUp></SignUp>
+                },
+            ]
+          },
+        ]);
+        export default router;
+
+###### CMD
+       
+       npm install react-simple-captcha
+
+##### Login/Login.jsx
+
+      import { useContext, useEffect, useState } from 'react';
+      import { loadCaptchaEnginge, LoadCanvasTemplate, validateCaptcha } from 'react-simple-captcha';
+      import { AuthContext } from '../../providers/AuthProvider';
+      import { Link, useLocation, useNavigate } from 'react-router-dom';
+      import { Helmet } from 'react-helmet-async';
+      import Swal from 'sweetalert2'
+
+      const Login = () => {
+          const [disabled, setDisabled] = useState(true);
+          const { signIn } = useContext(AuthContext);
+          const navigate = useNavigate();
+          const location = useLocation();
+
+          const from = location.state?.from?.pathname || "/";
+
+          useEffect(() => {
+              loadCaptchaEnginge(6);
+          }, [])
+
+          const handleLogin = event => {
+              event.preventDefault();
+              const form = event.target;
+              const email = form.email.value;
+              const password = form.password.value;
+              console.log(email, password);
+              signIn(email, password)
+                  .then(result => {
+                    console.log("login then",result);
+                      const user = result.user;
+                      console.log("login then",user);
+                      Swal.fire({
+                          title: 'User Login Successful.',
+                          showClass: {
+                              popup: 'animate__animated animate__fadeInDown'
+                          },
+                          hideClass: {
+                              popup: 'animate__animated animate__fadeOutUp'
+                          }
+                      });
+                      navigate(from, { replace: true });
+                  })
+          }
+
+          const handleValidateCaptcha = (e) => {
+              const user_captcha_value = e.target.value;
+              if (validateCaptcha(user_captcha_value)) {
+                  setDisabled(false);
+              }
+              else {
+                  setDisabled(true)
+              }
+          }
+
+          return (
+              <>
+                  <Helmet>
+                      <title>Bistro Boss | Login</title>
+                  </Helmet>
+                  <div className="hero min-h-screen bg-base-200">
+                      <div className="hero-content flex-col md:flex-row-reverse">
+                          <div className="text-center md:w-1/2 lg:text-left">
+                              <h1 className="text-5xl font-bold">Login now!</h1>
+                              <p className="py-6">Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda excepturi exercitationem quasi. In deleniti eaque aut repudiandae et a id nisi.</p>
+                          </div>
+                          <div className="card md:w-1/2 max-w-sm shadow-2xl bg-base-100">
+                              <form onSubmit={handleLogin} className="card-body">
+                                  <div className="form-control">
+                                      <label className="label">
+                                          <span className="label-text">Email</span>
+                                      </label>
+                                      <input type="email" name="email" placeholder="email" className="input input-bordered" />
+                                  </div>
+                                  <div className="form-control">
+                                      <label className="label">
+                                          <span className="label-text">Password</span>
+                                      </label>
+                                      <input type="password" name="password" placeholder="password" className="input input-bordered" />
+                                      <label className="label">
+                                          <a href="#" className="label-text-alt link link-hover">Forgot password?</a>
+                                      </label>
+                                  </div>
+                                  <div className="form-control">
+                                      <label className="label">
+                                          <LoadCanvasTemplate />
+                                      </label>
+                                      <input onBlur={handleValidateCaptcha} type="text" name="captcha" placeholder="type the captcha above" className="input input-bordered" />
+
+                                  </div>
+                                  <div className="form-control mt-6">
+                                      <input disabled={disabled} className="btn btn-primary" type="submit" value="Login" />
+                                  </div>
+                              </form>
+                              <p><small>New Here? <Link to="/signup">Create an account</Link> </small></p>
+                          </div>
+                      </div>
+                  </div>
+              </>
+          );
+      };
+
+      export default Login;
+
+
+#### routes/Routes.jsx
+
+
+      import Login from "../pages/Login/Login";
+
+            const router = createBrowserRouter([
+              {
+                path: "/",
+              
+                children:[
+                    
+
+                    {
+                      path:'login',
+                      element:<Login></Login>
+                    },
+                    
+                ]
+              },
+            ]);
+            export default router;
+
+
+##### Shared/Navber.jsx
+
+        import { Link } from "react-router-dom";
+        import { useContext } from "react";
+        import { AuthContext } from "../../../providers/AuthProvider";
+        const NavBar = () => {
+          const { user, logOut } = useContext(AuthContext);
+
+          const handleLogOut = () => {
+              logOut()
+                  .then(() => { })
+                  .catch(error => console.log(error));
+          }
+          const navItems =<>
+                  <li><Link to="/">Home</Link></li>
+                  <li><Link to="/menu">Menu</Link></li>
+                  <li><Link to="/order/salad">Order Food</Link></li>
+                  {
+                    user ? <>
+                        <span>{user?.displayName}</span>
+                        <button onClick={handleLogOut} className="btn btn-ghost">LogOut</button>
+                    </> : <>
+                        <li><Link to="/login">Login</Link></li>
+                    </>
+                }
+                
+                    <li>
+                      <details>
+                        <summary>Parent</summary>
+                        <ul className="p-2">
+                          <li><a>Submenu 1</a></li>
+                          <li><a>Submenu 2</a></li>
+                        </ul>
+                      </details>
+                    </li>
+                    <li><a>Item 3</a></li>
+                </>
+
+                  return (
+
+
+                    );
+        };
+
+        export default NavBar;
+
+
+###### Layout/Main.jsx
+
+          import { Outlet, useLocation } from "react-router-dom";
+          import Footer from "../pages/Shared/Footer/Footer";
+          import NavBar from "../pages/Shared/NavBar/NavBar";
+
+
+          const Main = () => {
+            const location = useLocation();
+              
+              const noHeaderFooter = location.pathname.includes('login') || location.pathname.includes('signup');
+
+              return (
+                  <div>
+                      { noHeaderFooter || <NavBar></NavBar>}
+                      <Outlet></Outlet>
+                      { noHeaderFooter || <Footer></Footer>}
+                  </div>
+            );
+          };
+
+          export default Main;
+###### PrivateRoute.jsx
+        import { useContext } from "react";
+        import { AuthContext } from "../providers/AuthProvider";
+        import { Navigate, useLocation } from "react-router";
+
+
+        const PrivateRoute = ({ children }) => {
+            const { user, loading } = useContext(AuthContext);
+            const location = useLocation();
+
+            if(loading){
+                return <progress className="progress w-56"></progress>
+            }
+
+            if (user) {
+                return children;
+            }
+            return <Navigate to="/login" state={{from: location}} replace></Navigate>
+        };
+
+        export default PrivateRoute;
+
+
+##### Next Day start (67-2 Enforce User To Login Before Add To The Cart)
 
 
 
