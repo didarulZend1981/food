@@ -8,6 +8,10 @@ import Login from "../pages/Login/Login";
 import SignUp from "../pages/SignUp/SignUp";
 import Dashboard from "../Layout/Dashboard";
 import Cart from "../pages/Dashboard/Cart/Cart";
+import AllUser from "../pages/Dashboard/Cart/AllUser/AllUser";
+import AddItems from "../pages/Dashboard/AddItems/AddItems";
+import ManageItems from "../pages/Dashboard/ManageItems/ManageItems";
+import UpdateItem from "../pages/Dashboard/UpdateItem/UpdateItem";
       const router = createBrowserRouter([
         {
           path: "/",
@@ -43,7 +47,25 @@ import Cart from "../pages/Dashboard/Cart/Cart";
             {
               path: 'cart',
               element: <Cart></Cart>
-            }
+            },
+            {
+              path: 'users',
+              element: <AllUser></AllUser>
+            },
+            ,
+            {
+              path: 'addItem',
+              element:<AddItems></AddItems>
+            },
+            {
+              path: 'manageItems',
+              element:<ManageItems></ManageItems>
+            },
+            {
+              path: 'updateItem/:id',
+              element: <UpdateItem></UpdateItem>,
+              loader: ({params}) => fetch(`http://localhost:5000/menu/${params.id}`)
+            },
           ]
         }
 

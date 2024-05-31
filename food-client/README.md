@@ -1932,4 +1932,1357 @@
 
 
 
- 
+ ##### Mongodb user insert
+
+
+ #### Hooks/useAxiosPublic.jsx
+      import axios from "axios";
+
+      const axiosPublic = axios.create({
+          baseURL: 'http://localhost:5000'
+      })
+
+      const useAxiosPublic = () => {
+          return axiosPublic;
+      };
+
+      export default useAxiosPublic;
+
+
+#### pages/SignUp.jsx
+
+        import { useContext } from "react";
+        import { Helmet } from "react-helmet-async";
+        import { useForm } from "react-hook-form";
+        // import { AuthContext } from "../../providers/AuthProvider";
+        import { Link, useNavigate } from "react-router-dom";
+        import Swal from 'sweetalert2'
+        import { AuthContext } from "../../providers/AuthProvider";
+        import useAxiosPublic from "../../hooks/useAxiosPublic";
+        
+
+        const SignUp = () => {
+            const axiosPublic = useAxiosPublic(); // letest modify
+            const { register, handleSubmit, reset, formState: { errors } } = useForm();
+            const { createUser, updateUserProfile } = useContext(AuthContext);
+            const navigate = useNavigate();
+
+            const onSubmit = data => {
+                console.log(data);
+                createUser(data.email, data.password)
+                    .then(result => {
+                        const loggedUser = result.user;
+                        console.log(loggedUser);
+                        updateUserProfile(data.name, data.photoURL)
+                            .then(() => {
+                               //letest modifi
+
+
+
+                                console.log('user profile info updated')
+                                const userInfo = {
+                                    name: data.name,
+                                    email: data.email
+                                }
+
+                                axiosPublic.post('/users', userInfo)
+                                    .then(res => {
+                                        if (res.data.insertedId) {
+                                            console.log('user added to the database')
+                                            reset();
+                                            Swal.fire({
+                                                position: 'top-end',
+                                                icon: 'success',
+                                                title: 'User created successfully.',
+                                                showConfirmButton: false,
+                                                timer: 1500
+                                            });
+                                            navigate('/');
+                                        }
+                                    })
+
+
+
+
+                              <!-- end latest modify -->
+
+
+                            })
+                            .catch(error => console.log(error))
+                    })
+            };
+
+            return (
+                <>
+                    <Helmet>
+                        <title>Bistro Boss | Sign Up</title>
+                    </Helmet>
+                    <div className="hero min-h-screen bg-base-200">
+                        <div className="hero-content flex-col lg:flex-row-reverse">
+                            <div className="text-center lg:text-left">
+                                <h1 className="text-5xl font-bold">Sign up now!</h1>
+                                <p className="py-6">Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda excepturi exercitationem quasi. In deleniti eaque aut repudiandae et a id nisi.</p>
+                            </div>
+                            <div className="card flex-shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
+                                <form onSubmit={handleSubmit(onSubmit)} className="card-body">
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text">Name</span>
+                                        </label>
+                                        <input type="text"  {...register("name", { required: true })} name="name" placeholder="Name" className="input input-bordered" />
+                                        {errors.name && <span className="text-red-600">Name is required</span>}
+                                    </div>
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text">Photo URL</span>
+                                        </label>
+                                        <input type="text"  {...register("photoURL", { required: true })} placeholder="Photo URL" className="input input-bordered" />
+                                        {errors.photoURL && <span className="text-red-600">Photo URL is required</span>}
+                                    </div>
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text">Email</span>
+                                        </label>
+                                        <input type="email"  {...register("email", { required: true })} name="email" placeholder="email" className="input input-bordered" />
+                                        {errors.email && <span className="text-red-600">Email is required</span>}
+                                    </div>
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text">Password</span>
+                                        </label>
+                                        <input type="password"  {...register("password", {
+                                            required: true,
+                                            minLength: 6,
+                                            maxLength: 20,
+                                            pattern: /(?=.*[A-Z])(?=.*[!@#$&*])(?=.*[0-9])(?=.*[a-z])/
+                                        })} placeholder="password" className="input input-bordered" />
+                                        {errors.password?.type === 'required' && <p className="text-red-600">Password is required</p>}
+                                        {errors.password?.type === 'minLength' && <p className="text-red-600">Password must be 6 characters</p>}
+                                        {errors.password?.type === 'maxLength' && <p className="text-red-600">Password must be less than 20 characters</p>}
+                                        {errors.password?.type === 'pattern' && <p className="text-red-600">Password must have one Uppercase one lower case, one number and one special character.</p>}
+                                        <label className="label">
+                                            <a href="#" className="label-text-alt link link-hover">Forgot password?</a>
+                                        </label>
+                                    </div>
+                                    <div className="form-control mt-6">
+                                        <input className="btn btn-primary" type="submit" value="Sign Up" />
+                                    </div>
+                                </form>
+
+                                <p className="px-6"><small>Already have an account <Link to="/login">Login</Link></small></p>
+                                
+                                
+                            
+                            
+                            </div>
+
+
+                        </div>
+                    </div>
+                </>
+            );
+        };
+
+        export default SignUp;
+
+
+  #### Social login
+
+      AuthProvider.jsx
+
+      const googleProvider = new GoogleAuthProvider();
+
+      const googleSignIn = () => {
+        setLoading(true);
+        return signInWithPopup(auth, googleProvider);
+      }
+
+      const authInfo = {
+          
+          googleSignIn
+      }
+
+##### components/SocialLogin/SocialLogin.jsx
+
+      import { FaGoogle } from "react-icons/fa";
+
+      import { useNavigate } from "react-router-dom";
+      import useAuth from "../../hooks/useAuth";
+      import useAxiosPublic from "../../hooks/useAxiosPublic";
+
+
+      const SocialLogin = () => {
+          const { googleSignIn } = useAuth();
+          const axiosPublic = useAxiosPublic();
+          const navigate = useNavigate();
+
+          const handleGoogleSignIn = () =>{
+              googleSignIn()
+              .then(result =>{
+                  console.log(result.user);
+                  const userInfo = {
+                      email: result.user?.email,
+                      name: result.user?.displayName
+                  }
+                  axiosPublic.post('/users', userInfo)
+                  .then(res =>{
+                      console.log(res.data);
+                      navigate('/');
+                  })
+              })
+          }
+
+          return (
+              <div className="p-8">
+                  <div className="divider"></div>
+                  <div>
+                      <button onClick={handleGoogleSignIn} className="btn">
+                          <FaGoogle className="mr-2"></FaGoogle>
+                          Google
+                      </button>
+                  </div>
+              </div>
+          );
+      };
+
+      export default SocialLogin;
+
+#### signUp/Login (add this line)
+
+    import SocialLogin from "../../components/SocialLogin/SocialLogin";
+
+      <SocialLogin></SocialLogin>
+
+
+###### On The Dashboard Page 
+       && Display All Users 
+       And Create Make Admin API
+
+##### 01.DashBoard layout(Layout/Dashboard.jsx)
+
+        import { FaAd, FaBook, FaCalendar, FaEnvelope, FaHome, FaList, FaSearch, FaShoppingCart, FaUsers, FaUtensils } from "react-icons/fa";
+        import { NavLink, Outlet } from "react-router-dom";
+        import useCart from "../hooks/useCart";
+        import { useState } from "react";
+
+
+
+
+        const Dashboard = () => {
+            const [cart] = useCart();
+
+            // TODO: get isAdmin value from the database
+            const [isAdmin] = useState(true);
+
+            return (
+                <div className="flex">
+                    {/* dashboard side bar */}
+                    <div className="w-64 min-h-screen bg-orange-400">
+                        <ul className="menu p-4">
+                            {
+                                isAdmin ? <>
+                                    <li>
+                                        <NavLink to="/dashboard/adminHome">
+                                            <FaHome></FaHome>
+                                            Admin Home</NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/dashboard/addItems">
+                                            <FaUtensils></FaUtensils>
+                                            Add Items</NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/dashboard/manageItems">
+                                            <FaList></FaList>
+                                            Manage Items</NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/dashboard/bookings">
+                                            <FaBook></FaBook>
+                                            Manage Bookings</NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/dashboard/users">
+                                            <FaUsers></FaUsers>
+                                            All Users</NavLink>
+                                    </li>
+                                </>
+                                    :
+                                    <>
+                                        <li>
+                                            <NavLink to="/dashboard/userHome">
+                                                <FaHome></FaHome>
+                                                User Home</NavLink>
+                                        </li>
+                                        <li>
+                                            <NavLink to="/dashboard/reservation">
+                                                <FaCalendar></FaCalendar>
+                                                Reservation</NavLink>
+                                        </li>
+                                        <li>
+                                            <NavLink to="/dashboard/cart">
+                                                <FaShoppingCart></FaShoppingCart>
+                                                My Cart ({cart.length})</NavLink>
+                                        </li>
+                                        <li>
+                                            <NavLink to="/dashboard/review">
+                                                <FaAd></FaAd>
+                                                Add a Review</NavLink>
+                                        </li>
+                                        <li>
+                                            <NavLink to="/dashboard/bookings">
+                                                <FaList></FaList>
+                                                My Bookings</NavLink>
+                                        </li>
+                                    </>
+                            }
+                            {/* shared nav links */}
+                            <div className="divider"></div>
+                            <li>
+                                <NavLink to="/">
+                                    <FaHome></FaHome>
+                                    Home</NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="/order/salad">
+                                    <FaSearch></FaSearch>
+                                    Menu</NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="/order/contact">
+                                    <FaEnvelope></FaEnvelope>
+                                    Contact</NavLink>
+                            </li>
+                        </ul>
+                    </div>
+                    {/* dashboard content */}
+                    <div className="flex-1 p-8">
+                        <Outlet></Outlet>
+                    </div>
+                </div>
+            );
+        };
+
+        export default Dashboard;
+
+
+#### 02. cart (../pages/Dashboard/Cart/Cart)
+
+        import { FaTrashAlt } from "react-icons/fa";
+
+        import Swal from "sweetalert2";
+
+        import useCart from "../../../hooks/useCart";
+        import useAxiosSecure from "../../../hooks/useAxiosSecure";
+
+
+        const Cart = () => {
+            const [cart, refetch] = useCart();
+            const totalPrice = cart.reduce((total, item) => total + item.price, 0);
+            const axiosSecure = useAxiosSecure();
+
+            const handleDelete = id => {
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "You won't be able to revert this!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, delete it!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+
+                        axiosSecure.delete(`/carts/${id}`)
+                            .then(res => {
+                                if (res.data.deletedCount > 0) {
+                                    refetch();
+                                    Swal.fire({
+                                        title: "Deleted!",
+                                        text: "Your file has been deleted.",
+                                        icon: "success"
+                                    });
+                                }
+                            })
+                    }
+                });
+            }
+
+            return (
+                <div>
+                    <div className="flex justify-evenly mb-8">
+                        <h2 className="text-4xl">Items: {cart.length}</h2>
+                        <h2 className="text-4xl">Total Price: {totalPrice}</h2>
+                        <button className="btn btn-primary">Pay</button>
+
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="table  w-full">
+                            {/* head */}
+                            <thead>
+                                <tr>
+                                    <th>
+                                        #
+                                    </th>
+                                    <th>Image</th>
+                                    <th>Name</th>
+                                    <th>Price</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {
+                                    cart.map((item, index) => <tr key={item._id}>
+                                        <th>
+                                            {index + 1}
+                                        </th>
+                                        <td>
+                                            <div className="flex items-center gap-3">
+                                                <div className="avatar">
+                                                    <div className="mask mask-squircle w-12 h-12">
+                                                        <img src={item.image} alt="Avatar Tailwind CSS Component" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {item.name}
+                                        </td>
+                                        <td>${item.price}</td>
+                                        <th>
+                                            <button
+                                                onClick={() => handleDelete(item._id)}
+                                                className="btn btn-ghost btn-lg">
+                                                <FaTrashAlt className="text-red-600"></FaTrashAlt>
+                                            </button>
+                                        </th>
+                                    </tr>)
+                                }
+
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        };
+
+        export default Cart;
+
+#### 03. 2 API CREATE SERVER
+        // admin role
+            app.patch('/users/admin/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                role: 'admin'
+                }
+            }
+            const result = await userFoodCollection.updateOne(filter, updatedDoc);
+            res.send(result);
+            })
+        // user delete by mongodb
+            app.delete('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await userFoodCollection.deleteOne(query);
+            res.send(result);
+            })
+
+#### 04. AllUser (../pages/Dashboard/Cart/AllUser/AllUser.jsx)
+
+        import { useQuery } from "@tanstack/react-query";
+        import useAxiosSecure from "../../../../hooks/useAxiosSecure";
+        import { FaTrashAlt, FaUsers } from "react-icons/fa";
+        import Swal from "sweetalert2";
+
+
+        const AllUser = () => {
+        const axiosSecure = useAxiosSecure();
+        const {data:users=[],refetch} =useQuery({
+            queryKey:['users'],
+            queryFn:async()=>{
+            const res = await axiosSecure.get('/users');
+            return res.data;
+            }
+        })
+
+
+
+
+        const handleMakeAdmin = user =>{
+                console.log(user);
+                axiosSecure.patch(`/users/admin/${user._id}`)
+                .then(res =>{
+                    console.log(res.data)
+                    if(res.data.modifiedCount > 0){
+                        refetch();
+                        Swal.fire({
+                            position: "top-end",
+                            icon: "success",
+                            title: `${user.name} is an Admin Now!`,
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    }
+                })
+            }
+
+            const handleDeleteUser = user => {
+            
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "You won't be able to revert this!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, delete it!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+
+                        axiosSecure.delete(`/users/${user._id}`)
+                            .then(res => {
+                                if (res.data.deletedCount > 0) {
+                                    refetch();
+                                    Swal.fire({
+                                        title: "Deleted!",
+                                        text: "Your file has been deleted.",
+                                        icon: "success"
+                                    });
+                                }
+                            })
+                    }
+                });
+            }
+        return (
+            <div>
+                <div className="flex justify-evenly my-4">
+                    <h2 className="text-3xl">All Users</h2>
+                    <h2 className="text-3xl">Total Users-{users.length}</h2>
+
+                    </div>
+                <div className="flex justify-evenly my-4">
+                    <div className="overflow-x-auto w-full">
+                                <table className="table">
+                                {/* head */}
+                                <thead>
+                                    <tr>
+                                    <th></th>
+                                    <th>Name</th>
+                                    <th>Job</th>
+                                    <th>Favorite Color</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {
+                                    users.map((user, index) => <tr key={user._id}>
+                                        <th>{index + 1}</th>
+                                        <td>{user.name}</td>
+                                        <td>{user.email}</td>
+                                        <td>
+                                            { user.role === 'admin' ? 'Admin' : <button
+                                                onClick={() => handleMakeAdmin(user)}
+                                                className="btn btn-lg bg-orange-500">
+                                                <FaUsers className="text-white 
+                                                text-2xl"></FaUsers>
+                                            </button>}
+                                        </td>
+                                        <td>
+                                            <button
+                                                onClick={() => handleDeleteUser(user)}
+                                                className="btn btn-ghost btn-lg">
+                                                <FaTrashAlt className="text-red-600"></FaTrashAlt>
+                                            </button>
+                                        </td>
+                                    </tr>)
+                                }
+
+                                    
+                                </tbody>
+                                </table>
+                            </div>
+                </div>
+            </div>
+        );
+        };
+
+        export default AllUser;
+
+
+#### 05. route create 3 
+        import { createBrowserRouter } from "react-router-dom";
+
+        import Dashboard from "../Layout/Dashboard";
+        import Cart from "../pages/Dashboard/Cart/Cart";
+        import AllUser from "../pages/Dashboard/Cart/AllUser/AllUser";
+            const router = createBrowserRouter([
+                
+                {
+                path: 'dashboard',
+                element: <Dashboard></Dashboard>,
+                children: [
+                    {
+                    path: 'cart',
+                    element: <Cart></Cart>
+                    },
+                    {
+                    path: 'users',
+                    element: <AllUser></AllUser>
+                    }
+                ]
+                }
+
+
+            ]);
+            export default router;     
+#### 06. Navbar link create
+
+     <li> <Link to="/dashboard/cart"></li>
+
+
+##################### jwt Step by step
+###### cmd 
+        npm install jsonwebtoken
+###### server index.js
+        const jwt = require('jsonwebtoken')
+##### env.local
+      ACCESS_TOKEN_SECRET=70fce714172fedeb96b2efc20559609fe9272135a29ea4feed84a09decdb8e480046f77e3c3a9cbe361972cfce4632c0b6eb0f656b414de766ed96c39c473100
+##### server index.js
+        // auth related api
+            app.post('/jwt', async (req, res) => {
+            const user = req.body
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+                expiresIn: '365d',
+            })
+            res.send({token})
+                // .cookie('token', token, {
+                //   httpOnly: true,
+                //   secure: process.env.NODE_ENV === 'production',
+                //   sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+                // })
+                // .send({ success: true })
+            })
+
+##### AuthProvider.jsx
+
+
+        useEffect(() => {
+                const unsubscribe = onAuthStateChanged(auth, currentUser => {
+                    setUser(currentUser);
+                    // console.log('current user', currentUser);
+                    // setLoading(false);
+
+
+
+
+                    setUser(currentUser);
+                    if (currentUser) {
+                        // get token and store client
+                        const userInfo = { email: currentUser.email };
+                        axiosPublic.post('/jwt', userInfo)
+                            .then(res => {
+                                if (res.data.token) {
+                                    localStorage.setItem('access-token', res.data.token);
+                                }
+                            })
+                    }
+                    else {
+                        // TODO: remove token (if token stored in the client side: Local storage, caching, in memory)
+                        localStorage.removeItem('access-token');
+                    }
+                    setLoading(false);
+                });
+                return () => {
+                    return unsubscribe();
+                }
+            }, [])
+
+
+
+###### index.js(server)
+
+
+        // Verify Token Middleware
+
+
+        const verifyToken = (req, res, next) => {
+            console.log('inside verify token', req.headers.authorization);
+            if (!req.headers.authorization) {
+                return res.status(401).send({ message: 'unauthorized access' });
+            }
+            const token = req.headers.authorization.split(' ')[1];
+            jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+                    if (err) {
+                    return res.status(401).send({ message: 'unauthorized access' })
+                    }
+                    req.decoded = decoded;
+                    next();
+            })
+        }
+
+###### index.jsx token check
+            app.get('/users', verifyToken, async(req,res) =>{
+                
+                const result = await userFoodCollection.find().toArray()
+                res.send(result);
+
+            })
+
+###### ../../../../hooks/useAxiosSecure.jsx
+
+
+            import axios from "axios";
+            import { useNavigate } from "react-router-dom";
+            import useAuth from "./useAuth";
+
+            const axiosSecure = axios.create({
+                baseURL: 'http://localhost:5000'
+            })
+            const useAxiosSecure = () => {
+                const navigate = useNavigate();
+                const { logOut } = useAuth();
+
+                // request interceptor to add authorization header for every secure call to teh api
+                axiosSecure.interceptors.request.use(function (config) {
+                    const token = localStorage.getItem('access-token')
+                    // console.log('request stopped by interceptors', token)
+                    config.headers.authorization = `Bearer ${token}`;
+                    return config;
+                }, function (error) {
+                    // Do something with request error
+                    return Promise.reject(error);
+                });
+
+
+                // intercepts 401 and 403 status
+                axiosSecure.interceptors.response.use(function (response) {
+                    return response;
+                }, async (error) => {
+                    const status = error.response.status;
+                    // console.log('status error in the interceptor', status);
+                    // for 401 or 403 logout the user and move the user to the login
+                    if (status === 401 || status === 403) {
+                        await logOut();
+                        navigate('/login');
+                    }
+                    return Promise.reject(error);
+                })
+
+
+                return axiosSecure;
+            };
+
+            export default useAxiosSecure;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            // import axios from "axios";
+
+            // const axiosSecure = axios.create({
+            //     baseURL: 'http://localhost:5000'
+            // })
+            // const useAxiosSecure = () => {
+
+            //     return axiosSecure;
+            // };
+
+            // export default useAxiosSecure;
+
+
+###### index.js (server)
+
+            app.get('/users/admin/:email', verifyToken, async (req, res) => {
+                const email = req.params.email;
+
+                if (email !== req.decoded.email) {
+                    return res.status(403).send({ message: 'forbidden access' })
+                }
+
+                const query = { email: email };
+                const user = await userFoodCollection.findOne(query);
+                let admin = false;
+                if (user) {
+                    admin = user?.role === 'admin';
+                }
+                res.send({ admin });
+                })
+
+###### custom hooks(../hooks/useAdmin.jsx)
+
+        import { useQuery } from "@tanstack/react-query";
+        import useAuth from "./useAuth";
+        import useAxiosSecure from "./useAxiosSecure";
+
+
+
+        const useAdmin = () => {
+            const { user } = useAuth();
+            const axiosSecure = useAxiosSecure();
+            const { data: isAdmin, isPending: isAdminLoading } = useQuery({
+                queryKey: [user?.email, 'isAdmin'],
+                queryFn: async () => {
+                    const res = await axiosSecure.get(`/users/admin/${user.email}`);
+                    console.log(res.data);
+                    return res.data?.admin;
+                }
+            })
+            return [isAdmin, isAdminLoading]
+        };
+
+        export default useAdmin;
+
+
+
+###### server index.js
+
+        // use verify admin after verifyToken
+                const verifyAdmin = async (req, res, next) => {
+                const email = req.decoded.email;
+                const query = { email: email };
+                const user = await userFoodCollection.findOne(query);
+                const isAdmin = user?.role === 'admin';
+                if (!isAdmin) {
+                    return res.status(403).send({ message: 'forbidden access' });
+                }
+                   next();
+                }
+
+#####  AdminRoute.jsx
+        import { Navigate, useLocation } from "react-router-dom";
+        import useAdmin from "../hooks/useAdmin";
+        import useAuth from "../hooks/useAuth";
+
+
+        const AdminRoute = (children) => {
+            const [user, loading] = useAuth(); 
+            const [isAdmin, isAdminLoading] = useAdmin();
+            const location = useLocation();
+
+            if(loading || isAdminLoading){
+                return <progress className="progress w-56"></progress>
+            }
+
+            if (user && isAdmin) {
+                return children;
+            }
+            return <Navigate to="/login" state={{from: location}} replace></Navigate>
+        };
+
+        export default AdminRoute;
+
+        
+69-1 Why We Use React-Query, Axios And React Hook Form
+
+###########  Item ADD
+
+###### CMD 
+        React Hook Form instal
+###### Server site route create
+
+         //menu route
+        app.post('/menu', verifyToken, verifyAdmin, async (req, res) => {
+          const item = req.body;
+          const result = await menuFoodCollection.insertOne(item);
+          res.send(result);
+        });
+
+##### AddItems.jsx
+
+        import { useForm } from "react-hook-form";
+        import SectionTitle from "../../../components/SectionTitle/SectionTitle";
+        import { FaUtensils } from "react-icons/fa";
+        import Swal from "sweetalert2";
+        import useAxiosPublic from "../../../hooks/useAxiosPublic";
+        import useAxiosSecure from "../../../hooks/useAxiosSecure";
+
+        const image_hosting_key = import.meta.env.VITE_IMGBB_API_KEY;
+        const image_hosting_api = `https://api.imgbb.com/1/upload?key=${image_hosting_key}`;
+
+        const AddItems = () => {
+        const { register, handleSubmit, reset } = useForm();
+        const axiosPublic = useAxiosPublic();
+        const axiosSecure = useAxiosSecure();
+        const onSubmit = async (data) => {
+            console.log("data acey",data)
+            // image upload to imgbb and then get an url
+            const imageFile = { image: data.image[0] }
+            const res = await axiosPublic.post(image_hosting_api, imageFile, {
+                headers: {
+                    'content-type': 'multipart/form-data'
+                }
+            });
+            if (res.data.success) {
+                // now send the menu item data to the server with the image url
+                const menuItem = {
+                    name: data.name,
+                    category: data.category,
+                    price: parseFloat(data.price),
+                    recipe: data.recipe,
+                    image: res.data.data.display_url
+                }
+                //
+                console.log("data ase menu te---",menuItem) 
+                const menuRes = await axiosSecure.post('/menu', menuItem);
+                console.log("secure data paice--",menuRes.data)
+                if(menuRes.data.insertedId){
+                    // show success popup
+                    reset();
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "success",
+                        title: `${data.name} is added to the menu.`,
+                        showConfirmButton: false,
+                        timer: 1500
+                        });
+                }
+            }
+            console.log( 'with image url', res.data);
+        };
+
+        return (
+            <div>
+                <SectionTitle heading="add an item" subHeading="What's new?" ></SectionTitle>
+                <div>
+                    <form onSubmit={handleSubmit(onSubmit)}>
+                        <div className="form-control w-full my-6">
+                            <label className="label">
+                                <span className="label-text">Recipe Name*</span>
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="Recipe Name"
+                                {...register('name', { required: true })}
+                                required
+                                className="input input-bordered w-full" />
+                        </div>
+                        <div className="flex gap-6">
+                            {/* category */}
+                            <div className="form-control w-full my-6">
+                                <label className="label">
+                                    <span className="label-text">Category*</span>
+                                </label>
+                                <select defaultValue="default" {...register('category', { required: true })}
+                                    className="select select-bordered w-full">
+                                    <option disabled value="default">Select a category</option>
+                                    <option value="salad">Salad</option>
+                                    <option value="pizza">Pizza</option>
+                                    <option value="soup">Soup</option>
+                                    <option value="dessert">Dessert</option>
+                                    <option value="drinks">Drinks</option>
+                                </select>
+                            </div>
+
+                            {/* price */}
+                            <div className="form-control w-full my-6">
+                                <label className="label">
+                                    <span className="label-text">Price*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    placeholder="Price"
+                                    {...register('price', { required: true })}
+                                    className="input input-bordered w-full" />
+                            </div>
+
+                        </div>
+                        {/* recipe details */}
+                        <div className="form-control">
+                            <label className="label">
+                                <span className="label-text">Recipe Details</span>
+                            </label>
+                            <textarea {...register('recipe')} className="textarea textarea-bordered h-24" placeholder="Bio"></textarea>
+                        </div>
+
+                        <div className="form-control w-full my-6">
+                            <input {...register('image', { required: true })} type="file" className="file-input w-full max-w-xs" />
+                        </div>
+
+                        <button className="btn">
+                            Add Item <FaUtensils className="ml-4"></FaUtensils>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        );
+        };
+
+        export default AddItems;
+
+
+
+############ update-------------
+##### SERVER SITE
+      get route(loader: ({params}) => fetch(`http://localhost:5000/menu/${params.id}`))
+
+       app.get('/menu/:id', async (req, res) => {
+          const id = req.params.id;
+          const query = { _id: new ObjectId(id) }
+          const result = await menuFoodCollection.findOne(query);
+          res.send(result);
+        })
+
+        // menu update
+        app.patch('/menu/:id', async (req, res) => {
+          const item = req.body;
+          const id = req.params.id;
+          const filter = { _id: new ObjectId(id) }
+          const updatedDoc = {
+            $set: {
+              name: item.name,
+              category: item.category,
+              price: item.price,
+              recipe: item.recipe,
+              image: item.image
+            }
+          }
+
+##### UpdateItem/UpdateItem.jsx
+
+
+        import { useLoaderData } from "react-router-dom";
+        import SectionTitle from "../../../components/SectionTitle/SectionTitle";
+        import { useForm } from "react-hook-form";
+        import Swal from "sweetalert2";
+        import useAxiosPublic from "../../../hooks/useAxiosPublic";
+        import useAxiosSecure from "../../../hooks/useAxiosSecure";
+
+        const image_hosting_key = import.meta.env.VITE_IMGBB_API_KEY;
+        const image_hosting_api = `https://api.imgbb.com/1/upload?key=${image_hosting_key}`;
+
+        const UpdateItem = () => {
+            const {name, category, recipe, price, _id} = useLoaderData();
+            
+            const { register, handleSubmit } = useForm();
+            const axiosPublic = useAxiosPublic();
+            const axiosSecure = useAxiosSecure();
+            const onSubmit = async (data) => {
+                console.log("form hote data---",data)
+                // image upload to imgbb and then get an url
+                const imageFile = { image: data.image[0] }
+                const res = await axiosPublic.post(image_hosting_api, imageFile, {
+                    headers: {
+                        'content-type': 'multipart/form-data'
+                    }
+                });
+                if (res.data.success) {
+                    // now send the menu item data to the server with the image url
+                    const menuItem = {
+                        name: data.name,
+                        category: data.category,
+                        price: parseFloat(data.price),
+                        recipe: data.recipe,
+                        image: res.data.data.display_url
+                    }
+                    // 
+                    console.log("data with image",menuItem)
+                    const menuRes = await axiosSecure.patch(`/menu/${_id}`, menuItem);
+                    console.log("route hote data--",menuRes.data)
+                    if(menuRes.data.modifiedCount > 0){
+                        // show success popup
+                        // reset();
+                        Swal.fire({
+                            position: "top-end",
+                            icon: "success",
+                            title: `${data.name} is updated to the menu.`,
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    }
+                }
+                console.log( 'with image url', res.data);
+            };
+            
+            
+            return (
+                <div>
+                    <SectionTitle heading="Update an Item" subHeading="Refresh info"></SectionTitle>
+                    <div>
+                        <form onSubmit={handleSubmit(onSubmit)}>
+                            <div className="form-control w-full my-6">
+                                <label className="label">
+                                    <span className="label-text">Recipe Name*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    defaultValue={name}
+                                    placeholder="Recipe Name"
+                                    {...register('name', { required: true })}
+                                    required
+                                    className="input input-bordered w-full" />
+                            </div>
+                            <div className="flex gap-6">
+                                {/* category */}
+                                <div className="form-control w-full my-6">
+                                    <label className="label">
+                                        <span className="label-text">Category*</span>
+                                    </label>
+                                    <select defaultValue={category} {...register('category', { required: true })}
+                                        className="select select-bordered w-full">
+                                        <option disabled value="default">Select a category</option>
+                                        <option value="salad">Salad</option>
+                                        <option value="pizza">Pizza</option>
+                                        <option value="soup">Soup</option>
+                                        <option value="dessert">Dessert</option>
+                                        <option value="drinks">Drinks</option>
+                                    </select>
+                                </div>
+
+                                {/* price */}
+                                <div className="form-control w-full my-6">
+                                    <label className="label">
+                                        <span className="label-text">Price*</span>
+                                    </label>
+                                    <input
+                                        type="number"
+                                        defaultValue={price}
+                                        placeholder="Price"
+                                        {...register('price', { required: true })}
+                                        className="input input-bordered w-full" />
+                                </div>
+
+                            </div>
+                            {/* recipe details */}
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text">Recipe Details</span>
+                                </label>
+                                <textarea defaultValue={recipe} {...register('recipe')} className="textarea textarea-bordered h-24" placeholder="Bio"></textarea>
+                            </div>
+
+                            <div className="form-control w-full my-6">
+                                <input {...register('image', { required: true })} type="file" className="file-input w-full max-w-xs" />
+                            </div>
+
+                            <button className="btn">
+                                Update menu Item
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+
+        export default UpdateItem;
+
+
+##### Routes.jsx
+
+        import { createBrowserRouter } from "react-router-dom";
+        import Dashboard from "../Layout/Dashboard";
+
+        import UpdateItem from "../pages/Dashboard/UpdateItem/UpdateItem";
+            const router = createBrowserRouter([
+                
+                {
+                path: 'dashboard',
+                element: <Dashboard></Dashboard>,
+                children: [
+                
+                    {
+                    path: 'updateItem/:id',
+                    element: <UpdateItem></UpdateItem>,
+                    loader: ({params}) => fetch(`http://localhost:5000/menu/${params.id}`)
+                    },
+                ]
+                }
+
+
+            ]);
+            export default router;
+
+###### DELETE MENU ITEM
+##### Server
+        // delete route
+        app.delete('/menu/:id', verifyToken, verifyAdmin, async (req, res) => {
+          const id = req.params.id;
+          const query = { _id: new ObjectId(id) }
+          const result = await menuFoodCollection.deleteOne(query);
+          res.send(result);
+        })
+
+#### useMenu modify---
+     useMenu.jsx
+        import { useQuery } from "@tanstack/react-query";
+        import useAxiosPublic from "./useAxiosPublic";
+
+        const useMenu = () => {
+            const axiosPublic = useAxiosPublic();
+          
+            const {data: menu = [], isPending: loading, refetch} = useQuery({
+                queryKey: ['menu'], 
+                queryFn: async() =>{
+                    const res = await axiosPublic.get('/menuFood');
+                    return res.data;
+                }
+            })
+
+
+            return [menu, loading, refetch]
+        }
+
+        export default useMenu;
+
+##### ItemMenu Delete and manege
+
+        ManageItems.jsx
+
+        import { FaEdit, FaTrashAlt } from "react-icons/fa";
+        import SectionTitle from "../../../components/SectionTitle/SectionTitle";
+        import useMenu from "../../../hooks/useMenu";
+        import Swal from "sweetalert2";
+        import useAxiosSecure from "../../../hooks/useAxiosSecure";
+        import { Link } from "react-router-dom";
+        const ManageItems = () => {
+        const [menu, ,refetch] = useMenu();
+            const axiosSecure = useAxiosSecure();
+
+            const handleDeleteItem = (item) => {
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You won't be able to revert this!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, delete it!"
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    const res = await axiosSecure.delete(`/menu/${item._id}`);
+                    // console.log(res.data);
+                    if (res.data.deletedCount > 0) {
+                        // refetch to update the ui
+                        refetch();
+                        Swal.fire({
+                            position: "top-end",
+                            icon: "success",
+                            title: `${item.name} has been deleted`,
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    }
+
+
+                }
+            });
+        }
+
+
+
+
+        
+
+
+
+            return (
+                <div>
+                    <SectionTitle heading="Manage All Items" subHeading="Hurry up"></SectionTitle>
+                    <div>
+                        <div className="overflow-x-auto">
+                            <table className="table w-full">
+                                {/* head */}
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            #
+                                        </th>
+                                        <th>Image</th>
+                                        <th>Item Name</th>
+                                        <th>Price</th>
+                                        <th>Update</th>
+                                        <th>Delete</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {
+                                        menu.map((item, index) => <tr key={item._id}>
+                                            <td>
+                                                {index + 1}
+                                            </td>
+                                            <td>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="avatar">
+                                                        <div className="mask mask-squircle w-12 h-12">
+                                                            <img src={item.image} alt="Avatar Tailwind CSS Component" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {item.name}
+                                            </td>
+                                            <td className="text-right">${item.price}</td>
+                                            <td>
+                                                <Link to={`/dashboard/updateItem/${item._id}`}>
+                                                    <button
+                                                        className="btn btn-ghost btn-lg bg-orange-500">
+                                                        <FaEdit className="text-white 
+                                                "></FaEdit>
+                                                    </button>
+                                                </Link>
+                                            </td>
+                                            <td>
+                                                <button
+                                                    onClick={() => handleDeleteItem(item)}
+                                                    className="btn btn-ghost btn-lg">
+                                                    <FaTrashAlt className="text-red-600"></FaTrashAlt>
+                                                </button>
+                                            </td>
+                                        </tr>)
+                                    }
+                                </tbody>
+
+
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        export default ManageItems;
+
+
+#### route create
+     routes.jsx
+     import { createBrowserRouter } from "react-router-dom";
+
+        import Dashboard from "../Layout/Dashboard";
+        import ManageItems from "../pages/Dashboard/ManageItems/ManageItems";
+
+        const router = createBrowserRouter([
+
+        {
+        path: 'dashboard',
+        element: <Dashboard></Dashboard>,
+        children: [
+
+        {
+            path: 'manageItems',
+            element:<ManageItems></ManageItems>
+        },
+
+        ]
+        }
+
+
+        ]);
+        export default router;
+
+
+
+
+
+
